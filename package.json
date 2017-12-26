@@ -1,0 +1,33 @@
+{
+  "name": "@nodeos/nodegit",
+  "version": "0.20.3",
+  "description": "Generates a Nodegit module for NodeOS",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/luii/nodeos-nodegit.git"
+  },
+  "scripts": {
+    "install": "prebuild-install || npm run build",
+    "build": "scripts/build",
+    "unbuild": "scripts/unbuild"
+  },
+  "author": {
+    "email": "czarnetzki.philipp@protonmail.ch",
+    "name": "Philipp 'luii' Czarnetzki",
+    "url": "https://github.com/luii"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "nodeos-cross-toolchain": "^1.0.0-RC3.1",
+    "nodeos-nodejs": "^8.4.0"
+  },
+  "dependencies": {
+    "node-gyp": "^3.6.2",
+    "prebuild-install": "^2.4.1"
+  },
+  "bugs": {
+    "url": "https://github.com/luii/nodeos-nodegit/issues"
+  },
+  "homepage": "https://github.com/luii/nodeos-nodegit"
+}
