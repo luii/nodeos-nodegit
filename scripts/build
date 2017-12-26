@@ -1,0 +1,160 @@
+#!/usr/bin/env bash
+
+GRN="\e[32m"
+CLR="\e[0m"
+
+TOOLCHAIN=`node -p "require('nodeos-cross-toolchain')"` || exit 1
+NODEJS_DIR=`node -p "require('nodeos-nodejs')"`
+
+source $TOOLCHAIN/scripts/adjustEnvVars.sh || exit $?
+
+# Set the PATH variable
+PATH=$TOOLCHAIN/bin:$PATH
+
+# Build cross-compiler (if needed)
+(
+  cd $TOOLCHAIN
+  BITS=$BITS CPU=$CPU MACHINE=$MACHINE npm install --production || exit $?
+) || exit $?
+
+NODEGIT_VERSION=`node -p "require('./package.json').version"`
+NODEGIT_URL=https://codeload.github.com/nodegit/nodegit/tar.gz/v${NODEGIT_VERSION}
+LIBGIT2_URL=https://codeload.github.com/nodegit/libgit2/tar.gz/da12bb8
+
+# If not defined, define JOBS and get the amount of cores
+# of your cpu and add 1 to it for n+1 Jobs
+if [[ -z $JOBS ]]; then
+  JOBS=$((`getconf _NPROCESSORS_ONLN` + 1))  
+fi
+
+
+# remove a array like list of strings recursivly
+function rmStep() {
+  rm -rf "$@"
+}
+
+function err() {
+  rmStep $STEP_DIR
+  exit $1
+}
+
+#
+# Download nodegit
+#
+
+OUT_DIR=`pwd`
+SRC_DIR=`pwd`/deps/nodegit
+OBJ_DIR=$OUT_DIR/build/$MACHINE
+
+echo -e "\n${GRN}Download nodegit${CLR}\n"
+
+STEP_DIR=$SRC_DIR
+if [[ ! -d $STEP_DIR ]]; then
+  mkdir -p $STEP_DIR || exit 3 # create deps/nodegit if not exist
+  
+  rmStep $OBJ_DIR              # removing/cleaning the old obj dir
+  curl $NODEGIT_URL | tar -xz --strip-components=1 -C $STEP_DIR || err 4 # download and extract into $STEP_DIR
+fi
+
+#
+# Install only nodegit dependencies
+#
+
+echo -e "\n${GRN}Installing dependencies in $STEP_DIR ${CLR}\n"
+
+STEP_DIR=$SRC_DIR
+if [[ ! -f $STEP_DIR/binding.gyp ]]; then
+  (
+    cd $STEP_DIR                 &&
+    npm install --ignore-scripts &&
+    npm run generateJson         &&
+    npm run generateMissingTests &&
+    npm run generateNativeCode || exit 103
+  )
+fi
+
+#
+# Download libgit2 and place it inside the vendor/libgit2 folder
+#
+
+echo -e "\n${GRN}Downloading libgit2${CLR}\n"
+STEP_DIR=$SRC_DIR/vendor/libgit2
+
+if [[ -d $STEP_DIR ]]; then
+  curl $LIBGIT2_URL | tar -xz --strip-components=1 -C $STEP_DIR || err 5
+fi
+
+#
+# Configure libssh2 with openssl
+#
+OPENSSL_DIR=$SRC_DIR/vendor/openssl/openssl
+OPENSSL_INC_DIR=$OPENSSL_DIR/include
+LIBSSH2_DIR=$SRC_DIR/vendor/libssh2
+
+echo -e "\n${GRN}Configuring libssh2 with openssl${CLR}\n"
+
+STEP_DIR=$LIBSSH2_DIR
+if [[ -d $STEP_DIR ]]; then
+
+  (
+    cd $STEP_DIR || exit 6
+
+    CC=$TARGET-gcc
+    CXX=$TARGET-g++
+    CPPFLAGS+=" -I${OPENSSL_INC_DIR}"
+
+    $STEP_DIR/configure --with-libssl-prefix=$OPENSSL_DIR \
+                        --silent                          \
+                        --build=$HOST                     \
+                        --host=$HOST                      \
+                        --target=$TARGET                  \
+                        --prefix=$OUT_DIR || err 7
+  )
+  
+fi
+
+#
+# Build nodegit
+#
+
+echo -e "\n${GRN}Building Nodegit${CLR}\n"
+
+NODEJS_VERSION=v`node -p "require('${$NODEJS_DIR}/package.json'}.version"`
+STEP_DIR=$SRC_DIR
+
+if [[ -f $STEP_DIR/binding.gyp ]]; then
+  (
+    cd $STEP_DIR || exit 12
+    BUILD_ONLY=1 # We need this env flag for the postinstall script
+
+    node-gyp configure || exit 13
+    node-gyp build -j $JOBS \
+                   --target=$NODEJS_VERSION \
+                   --arch=$NODE_ARCH \
+                   --silent || exit 14
+
+    # Run babel on the build to generate the dist/ and lib/ folder
+    npm run babel || exit 115
+
+    # Clean up the build
+    npm run postinstall || exit 15
+  )  
+fi
+
+#
+# Packing up the build
+#
+
+echo -e "\n${GRN}Packing up the build${CLR}\n"
+
+STEP_DIR=$OBJ_DIR
+if [[ ! -d $STEP_DIR ]]; then
+  (
+    mkdir -p $STEP_DIR &&
+    cd       $STEP_DIR || exit 16
+
+    cp -ar $SRC_DIR $STEP_DIR
+
+    rmStep $SRC_DIR
+  ) || err $?
+fi
