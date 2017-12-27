@@ -18,13 +18,11 @@
     "url": "https://github.com/luii"
   },
   "license": "MIT",
-  "devDependencies": {
-    "nodeos-cross-toolchain": "^1.0.0-RC3.1",
-    "nodeos-nodejs": "^8.4.0"
-  },
   "dependencies": {
     "node-gyp": "^3.6.2",
-    "prebuild-install": "^2.4.1"
+    "prebuild-install": "^2.4.1",
+    "nodeos-nodejs": "^8.4.0",
+    "nodeos-cross-toolchain": "^1.0.0-RC3.1"
   },
   "bugs": {
     "url": "https://github.com/luii/nodeos-nodegit/issues"
