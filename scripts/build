@@ -69,6 +69,10 @@ STEP_DIR=$SRC_DIR
 
 if [[ ! -f $STEP_DIR/binding.gyp ]]; then
   (
+    # We need to do this because we need the devDependencies
+    # for the build process to work
+    OLD_NODE_ENV=$NODE_ENV
+    NODE_ENV="development"
 
     #
     # Move into the $STEP_DIR and install only the dependencies with
@@ -83,6 +87,9 @@ if [[ ! -f $STEP_DIR/binding.gyp ]]; then
     npm run generateJson            &&
     npm run generateMissingTests    &&
     npm run generateNativeCode || exit 5
+
+    # resetting to the old value
+    NODE_ENV=$OLD_NODE_ENV
   )
 fi
 
