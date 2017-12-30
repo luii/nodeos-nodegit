@@ -72,20 +72,19 @@ if [[ ! -f $STEP_DIR/binding.gyp ]]; then
     # We need to do this because we need the devDependencies
     # for the build process to work
     OLD_NODE_ENV=$NODE_ENV
-    NODE_ENV="development"
-
+    
     #
     # Move into the $STEP_DIR and install only the dependencies with
     # the correct arch and nodedir, after running all the neccassary scripts
     # to create our nodegit module
     #
-    cd $STEP_DIR                    &&
-    npm install --ignore-scripts     \
-                --arch=$NODE_ARCH    \
-                --nodedir=$NODE_DIR  \
-                --jobs=$JOBS        &&
-    npm run generateJson            &&
-    npm run generateMissingTests    &&
+    cd $STEP_DIR                                           &&
+    NODE_ENV="development" npm install --ignore-scripts     \
+                                       --arch=$NODE_ARCH    \
+                                       --nodedir=$NODE_DIR  \
+                                       --jobs=$JOBS        &&
+    npm run generateJson                                   &&
+    npm run generateMissingTests                           &&
     npm run generateNativeCode || exit 5
 
     # resetting to the old value
