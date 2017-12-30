@@ -210,12 +210,11 @@ STEP_DIR=$PREBUILD
   cd $OUT_DIR        &&
   mkdir -p $STEP_DIR || exit 20
   
-  NN_NAME=`node -p "require('./package.json').name" | tr -d "@" | tr "/" "-"`
   NN_RUNTIME="node"
   NN_ABI=`node -p "process.versions.modules"`
   NN_PLATFORM=`node -p "process.platform"`
   NN_ARCH=$NODE_ARCH
-  STEP_DIR="${STEP_DIR}/${NN_NAME}-v${NODEGIT_VERSION}-${NN_RUNTIME}-v${NN_ABI}-${NN_PLATFORM}-${NODE_ARCH}.tar.gz"
+  STEP_DIR="${STEP_DIR}/nodegit-v${NODEGIT_VERSION}-${NN_RUNTIME}-v${NN_ABI}-${NN_PLATFORM}-${NODE_ARCH}.tar.gz"
   echo -e "${STEP_DIR}"
 
   tar -cf - build/ | gzip > $STEP_DIR || err 21
