@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+#
+# We run it like this because we dont want to trigger the prebuild-install
+#
+npm install --ignore-scripts &&
+npm run build -- -M pc -b 32 &&
+npm run unbuild              || exit 1
+
+npm install --ignore-scripts &&
+npm run build -- -M pc -b 64 &&
+npm run unbuild              || exit 2
+
+npm install --ignore-scripts &&
+npm run build -- -M raspi2   &&
+npm run unbuild              || exit 3
+
+if [ "$PREBUILD_GITHUB_TOKEN" ]; then
+    prebuild --upload-all $PREBUILD_GITHUB_TOKEN || exit 4
+fi
