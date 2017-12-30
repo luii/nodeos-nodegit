@@ -1,6 +1,6 @@
 {
   "name": "@nodeos/nodegit",
-  "version": "0.20.3",
+  "version": "0.20.4",
   "description": "Generates a Nodegit module for NodeOS",
   "main": "index.js",
   "repository": {

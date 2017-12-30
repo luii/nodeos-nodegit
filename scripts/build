@@ -16,7 +16,7 @@ PATH=$TOOLCHAIN/bin:$PATH
 
 NODE_VERSION=v`node -p "require('${NODE_DIR}/package.json').version"`
 NODEGIT_VERSION=`node -p "require('./package.json').version"`
-NODEGIT_URL=https://codeload.github.com/nodegit/nodegit/tar.gz/v${NODEGIT_VERSION}
+NODEGIT_URL=https://codeload.github.com/nodegit/nodegit/tar.gz/v0.20.3
 LIBGIT2_URL=https://codeload.github.com/nodegit/libgit2/tar.gz/da12bb8
 
 # If not defined, define JOBS and get the amount of cores
