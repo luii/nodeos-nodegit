@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 TOOLCHAIN=`node -p "require('nodeos-cross-toolchain')"` || exit 1
-NODE_DIR=`node -p "require('nodeos-nodejs')"`
+NODE_DIR=`node -p "require('nodeos-nodejs')"` || exit 2
 
 source $TOOLCHAIN/scripts/adjustEnvVars.sh || exit $?
 
@@ -41,7 +41,7 @@ function err() {
 
 OUT_DIR=`pwd`
 SRC_DIR=`pwd`/deps/nodegit
-OBJ_DIR=$OUT_DIR/build/$MACHINE
+PREBUILD=$OUT_DIR/prebuilds
 
 echo -e "${NWL}${GRN}Download nodegit${CLR}${NWL}"
 
@@ -50,7 +50,12 @@ STEP_DIR=$SRC_DIR
 if [[ ! -d $STEP_DIR ]]; then
   mkdir -p $STEP_DIR || exit 3 # create deps/nodegit if not exist
 
-  rmStep $OBJ_DIR              # removing/cleaning the old obj dir
+  rmStep $OUT_DIR/build $OUT_DIR/dist
+
+  #
+  # Download nodegit via url and unpack the tar.gz to $STEP_DIR stripping the
+  # base folder (in this case "nodegit")
+  #
   curl $NODEGIT_URL | tar -xz --strip-components=1 -C $STEP_DIR || err 4 # download and extract into $STEP_DIR
 fi
 
@@ -64,6 +69,12 @@ STEP_DIR=$SRC_DIR
 
 if [[ ! -f $STEP_DIR/binding.gyp ]]; then
   (
+
+    #
+    # Move into the $STEP_DIR and install only the dependencies with
+    # the correct arch and nodedir, after running all the neccassary scripts
+    # to create our nodegit module
+    #
     cd $STEP_DIR                    &&
     npm install --ignore-scripts     \
                 --arch=$NODE_ARCH    \
@@ -71,7 +82,7 @@ if [[ ! -f $STEP_DIR/binding.gyp ]]; then
                 --jobs=$JOBS        &&
     npm run generateJson            &&
     npm run generateMissingTests    &&
-    npm run generateNativeCode || exit 103
+    npm run generateNativeCode || exit 5
   )
 fi
 
@@ -84,7 +95,7 @@ echo -e "${NWL}${GRN}Downloading libgit2${CLR}${NWL}"
 STEP_DIR=$SRC_DIR/vendor/libgit2
 
 if [[ -d $STEP_DIR ]]; then
-  curl $LIBGIT2_URL | tar -xz --strip-components=1 -C $STEP_DIR || err 5
+  curl $LIBGIT2_URL | tar -xz --strip-components=1 -C $STEP_DIR || err 6
 fi
 
 #
@@ -101,21 +112,26 @@ STEP_DIR=$LIBSSH2_DIR
 if [[ -d $STEP_DIR ]]; then
 
   (
-    cd $STEP_DIR || exit 6
+    cd $STEP_DIR || exit 7
 
     CC=$TARGET-gcc
     CXX=$TARGET-g++
     CPPFLAGS+=" -I${OPENSSL_INC_DIR}"
 
+    #
     # Run autoreconf to get rid of the missing script warning
+    #
     autoreconf -fi
 
+    #
+    # Configureing libssh2 with openssl to properly build it
+    #
     $STEP_DIR/configure --with-libssl-prefix=$OPENSSL_DIR \
                         --silent                          \
                         --build=$HOST                     \
                         --host=$HOST                      \
                         --target=$TARGET                  \
-                        --prefix=$OUT_DIR || err 7
+                        --prefix=$OUT_DIR || err 8
   )
   
 fi
@@ -130,38 +146,71 @@ STEP_DIR=$SRC_DIR
 
 if [[ -f $STEP_DIR/binding.gyp ]]; then
   (
-    cd $STEP_DIR || exit 12
+    cd $STEP_DIR || exit 9
     BUILD_ONLY=1 # We need this env flag for the postinstall script
 
-    node-gyp configure || exit 13
+    node-gyp configure || exit 10
     node-gyp build --jobs $JOBS           \
                    --target=$NODE_VERSION \
                    --arch=$NODE_ARCH      \
-                   --silent               || exit 14
+                   --silent               || exit 11
 
     # Run babel on the build to generate the dist/ and lib/ folder
-    npm run babel || exit 115
+    npm run babel || exit 12
 
     # Clean up the build
-    npm run postinstall || exit 15
+    npm run postinstall || exit 13
   )  
 fi
 
 #
 # Packing up the build
+# Were copying all necessary files over to the top level dir
 #
 
 echo -e "${NWL}${GRN}Packing up the build${CLR}${NWL}"
 
-STEP_DIR=$OBJ_DIR
+BUILD_DIR=$OUT_DIR/build
+DIST_DIR=$OUT_DIR/dist
+
+NODEGIT_BUILD_DIR=$SRC_DIR/build/*
+NODEGIT_DIST_DIR=$SRC_DIR/dist/*
+
+# To replace the old index.js file
+RESOURCES_DIR=$OUT_DIR/resources
+
+STEP_DIR=$BUILD_DIR
 
 if [[ ! -d $STEP_DIR ]]; then
   (
-    mkdir -p $STEP_DIR &&
-    cd       $STEP_DIR || exit 16
+    mkdir -p $STEP_DIR || exit 14
+    mkdir -p $DIST_DIR || exit 15
 
-    cp -ar $SRC_DIR $STEP_DIR
+    cp -ar $NODEGIT_BUILD_DIR $BUILD_DIR || exit 16
+    cp -ar $NODEGIT_DIST_DIR  $DIST_DIR  || exit 17
 
-    rmStep $SRC_DIR
+    cp -a $OUT_DIR/index.js index.js.bak || exit 18
+    cat $RESOURCES_DIR/index.js > $OUT_DIR/index.js || exit 19
+
+    rmStep $OUT_DIR/deps 
   ) || err $?
 fi
+
+echo -e "${NWL}${GRN}Generating prebuild images${CLR}${NWL}"
+
+STEP_DIR=$PREBUILD
+
+(
+  cd $OUT_DIR        &&
+  mkdir -p $STEP_DIR || exit 20
+  
+  NN_NAME=`node -p "require('./package.json').name" | tr -d "@" | tr "/" "-"`
+  NN_RUNTIME="node"
+  NN_ABI=`node -p "process.versions.modules"`
+  NN_PLATFORM=`node -p "process.platform"`
+  NN_ARCH=$NODE_ARCH
+  STEP_DIR="${STEP_DIR}/${NN_NAME}-v${NODEGIT_VERSION}-${NN_RUNTIME}-v${NN_ABI}-${NN_PLATFORM}-${NODE_ARCH}.tar.gz"
+  echo -e "${STEP_DIR}"
+
+  tar -cf - build/ | gzip > $STEP_DIR || err 21
+) || err $?
