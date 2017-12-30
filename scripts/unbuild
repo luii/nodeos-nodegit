@@ -1,3 +1,8 @@
 #!/usr/bin/env bash
 
-rm -rf build/ out/ deps/ || exit $?
+rm -rf build/ deps/ node_modules/ || exit $?
+
+if [[ -f index.js.bak ]]; then
+    rm index.js
+    mv index.js.bak index.js
+fi
