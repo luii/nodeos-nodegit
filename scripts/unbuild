@@ -2,7 +2,7 @@
 
 rm -rf build/ deps/ node_modules/ || exit $?
 
-if [[ -f index.js.bak ]]; then
-    rm index.js
-    mv index.js.bak index.js
+if [[ -f package.json.bak ]]; then
+    rm package.json
+    mv package.json.bak package.json
 fi

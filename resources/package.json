@@ -1,0 +1,45 @@
+{
+  "name": "@nodeos/nodegit",
+  "version": "0.20.4",
+  "description": "Generates a Nodegit module for NodeOS",
+  "main": "dist/nodegit.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/luii/nodeos-nodegit.git"
+  },
+  "keywords": [
+    "libgit2",
+    "git2",
+    "git",
+    "native"
+  ],
+  "scripts": {
+    "install": "(prebuild-install https://github.com/luii/nodeos-nodegit/releases/download/v{version}/nodegit-v{version}-{runtime}-{abi}-{platform}-{arch}.tar.gz && cat ./resources/index.js > ./index.js) || npm run build",
+    "build": "scripts/build",
+    "unbuild": "scripts/unbuild",
+    "prebuilds": "scripts/prebuilds"
+  },
+  "author": {
+    "email": "czarnetzki.philipp@protonmail.ch",
+    "name": "Philipp 'luii' Czarnetzki",
+    "url": "https://github.com/luii"
+  },
+  "directories": {
+    "lib": "./lib",
+    "build": "./build"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "node-gyp": "^3.6.2",
+    "nodeos-cross-toolchain": "^1.0.0-RC3.1",
+    "nodeos-nodejs": "^8.4.0",
+    "prebuild-install": "^2.4.1",
+    "fs-extra": "~0.26.2",
+    "lodash": "^4.13.1",
+    "promisify-node": "~0.3.0"
+  },
+  "bugs": {
+    "url": "https://github.com/luii/nodeos-nodegit/issues"
+  },
+  "homepage": "https://github.com/luii/nodeos-nodegit"
+}
