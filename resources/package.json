@@ -1,6 +1,6 @@
 {
-  "name": "@nodeos/nodegit",
-  "version": "0.20.5",
+  "name": "nodeos-nodegit",
+  "version": "0.20.3",
   "description": "Generates a Nodegit module for NodeOS",
   "main": "dist/nodegit.js",
   "repository": {
