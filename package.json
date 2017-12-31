@@ -1,8 +1,8 @@
 {
   "name": "@nodeos/nodegit",
-  "version": "0.20.4",
+  "version": "0.20.5",
   "description": "Generates a Nodegit module for NodeOS",
-  "main": "dist/nodegit.js",
+  "main": "index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/luii/nodeos-nodegit.git"
@@ -14,7 +14,7 @@
     "native"
   ],
   "scripts": {
-    "install": "(prebuild-install https://github.com/luii/nodeos-nodegit/releases/download/v{version}/nodegit-v{version}-{runtime}-{abi}-{platform}-{arch}.tar.gz && cat ./resources/package.json > ./package.json) || npm run build",
+    "install": "(prebuild-install https://github.com/luii/nodeos-nodegit/releases/download/v{version}/nodegit-v{version}-{runtime}-{abi}-{platform}-{arch}.tar.gz && cat ./resources/index.js > ./index.js) || npm run build",
     "build": "scripts/build",
     "unbuild": "scripts/unbuild",
     "prebuilds": "scripts/prebuilds"
