@@ -5,7 +5,7 @@ Building nodegit for NodeOS with the cross building toolchain
 ## Quickstart ##
 
 ```bash
-$ npm install -S @nodeos/nodegit
+$ npm install -S nodeos-nodegit
 ```
 
 ## Building Steps ##
