@@ -15,7 +15,7 @@ PATH=$TOOLCHAIN/bin:$PATH
 ) || exit $?
 
 NODE_VERSION=v`node -p "require('${NODE_DIR}/package.json').version"`
-NODEGIT_VERSION=`node -p "require('./package.json').version"`
+NODEGIT_VERSION=`node -p "require('./package.json').nodegitVersion"`
 NODEGIT_URL=https://codeload.github.com/nodegit/nodegit/tar.gz/v${NODEGIT_VERSION}
 LIBGIT2_URL=https://codeload.github.com/nodegit/libgit2/tar.gz/da12bb8
 NODEOS_LIBCURL=https://codeload.github.com/luii/nodeos-libcurl/tar.gz/v0.0.1
@@ -201,7 +201,7 @@ STEP_DIR=$SRC_DIR
 if [[ -f $STEP_DIR/binding.gyp ]]; then
   (
     cd $STEP_DIR || exit 9
-    BUILD_ONLY=1 # We need this env flag for the postinstall script
+    BUILD_ONLY=1 # We need this env flag for the postinstall script to trigger
 
     node-gyp configure || exit 10
     node-gyp build --jobs $JOBS           \
@@ -241,13 +241,13 @@ if [[ ! -d $STEP_DIR ]]; then
     mkdir -p $DIST_DIR || exit 15
 
     cp -ar $NODEGIT_BUILD_DIR $BUILD_DIR || exit 16
-    cp -ar $NODEGIT_DIST_DIR  $DIST_DIR  || exit 17
+    cp -ar $NODEGIT_DIST_DIR $DIST_DIR  || exit 17
 
     cp -a $OUT_DIR/package.json package.json.bak || exit 18
     cat $RESOURCES_DIR/package.json > $OUT_DIR/package.json || exit 19
 
     rmStep $OUT_DIR/deps 
-  ) || err $?
+  ) || exit $?
 fi
 
 echo -e "${NWL}${GRN}Generating prebuild images${CLR}${NWL}"
@@ -262,7 +262,7 @@ STEP_DIR=$PREBUILD
   NN_ABI=`node -p "process.versions.modules"`
   NN_PLATFORM=`node -p "process.platform"`
   NN_ARCH=$NODE_ARCH
-  STEP_DIR="${STEP_DIR}/nodegit-v${NODEGIT_VERSION}-${NN_RUNTIME}-v${NN_ABI}-${NN_PLATFORM}-${NODE_ARCH}.tar.gz"
+  STEP_DIR="${STEP_DIR}/nodeos-nodegit-v${NODEGIT_VERSION}-${NN_RUNTIME}-v${NN_ABI}-${NN_PLATFORM}-${NODE_ARCH}.tar.gz"
   echo -e "${STEP_DIR}"
 
   tar -cf - build/ | gzip > $STEP_DIR || err 21

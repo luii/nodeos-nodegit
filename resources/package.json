@@ -1,6 +1,7 @@
 {
   "name": "nodeos-nodegit",
   "version": "0.20.3",
+  "nodegitVersion": "0.20.3",
   "description": "Generates a Nodegit module for NodeOS",
   "main": "dist/nodegit.js",
   "repository": {
@@ -14,7 +15,7 @@
     "native"
   ],
   "scripts": {
-    "install": "(prebuild-install https://github.com/luii/nodeos-nodegit/releases/download/v{version}/nodegit-v{version}-{runtime}-{abi}-{platform}-{arch}.tar.gz && cat ./resources/package.json > ./package.json) || npm run build",
+    "install": "(prebuild-install https://github.com/luii/nodeos-nodegit/releases/download/v{version}/nodeos-nodegit-v{version}-{runtime}-{abi}-{platform}-{arch}.tar.gz && cat ./resources/package.json > ./package.json) || npm run build",
     "build": "scripts/build",
     "unbuild": "scripts/unbuild",
     "prebuilds": "scripts/prebuilds"
@@ -30,13 +31,15 @@
   },
   "license": "MIT",
   "dependencies": {
-    "node-gyp": "^3.6.2",
-    "nodeos-cross-toolchain": "^1.0.0-RC3.1",
-    "nodeos-nodejs": "^8.4.0",
     "prebuild-install": "^2.4.1",
     "fs-extra": "~0.26.2",
-    "lodash": "^4.13.1",
-    "promisify-node": "~0.3.0"
+    "lodash": "^4.17.4",
+    "promisify-node": "~0.4.0"
+  },
+  "devDependencies": {
+    "node-gyp": "^3.6.2",
+    "nodeos-cross-toolchain": "^1.0.0-RC3.1",
+    "nodeos-nodejs": "^8.4.0"
   },
   "bugs": {
     "url": "https://github.com/luii/nodeos-nodegit/issues"
