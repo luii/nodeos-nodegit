@@ -18,6 +18,8 @@ NODE_VERSION=v`node -p "require('${NODE_DIR}/package.json').version"`
 NODEGIT_VERSION=`node -p "require('./package.json').version"`
 NODEGIT_URL=https://codeload.github.com/nodegit/nodegit/tar.gz/v${NODEGIT_VERSION}
 LIBGIT2_URL=https://codeload.github.com/nodegit/libgit2/tar.gz/da12bb8
+NODEOS_LIBCURL=https://codeload.github.com/luii/nodeos-libcurl/tar.gz/v0.0.1
+
 
 # If not defined, define JOBS and get the amount of cores
 # of your cpu and add 1 to it for n+1 Jobs
@@ -57,6 +59,12 @@ if [[ ! -d $STEP_DIR ]]; then
   # base folder (in this case "nodegit")
   #
   curl $NODEGIT_URL | tar -xz --strip-components=1 -C $STEP_DIR || err 4 # download and extract into $STEP_DIR
+
+  cd $STEP_DIR
+
+  # patching binding.gyp to allow a static libcurl dependency instead of a shared
+  # because we cant use shared dependencies for now in nodeos
+  patch -p1 < $OUT_DIR/resources/0001-Use-static-libcurl.patch || err 55
 fi
 
 #
@@ -72,7 +80,7 @@ if [[ ! -f $STEP_DIR/binding.gyp ]]; then
     # We need to do this because we need the devDependencies
     # for the build process to work
     OLD_NODE_ENV=$NODE_ENV
-    
+       
     #
     # Move into the $STEP_DIR and install only the dependencies with
     # the correct arch and nodedir, after running all the neccassary scripts
@@ -89,6 +97,46 @@ if [[ ! -f $STEP_DIR/binding.gyp ]]; then
 
     # resetting to the old value
     NODE_ENV=$OLD_NODE_ENV
+  )
+fi
+
+#
+# Download nodeos-libcurl and place it inside vendor/ folder inside of nodegit
+# therefor its easyier to navigate and copy some stuff for later
+#
+echo -e "${NWL}${GRN}Downloading nodeos-libcurl${CLR}${NWL}"
+
+VENDOR_DIR=$SRC_DIR/vendor
+NODEOS_LIBCURL_DIR=$VENDOR_DIR/nodeos-libcurl
+STEP_DIR=$NODEOS_LIBCURL_DIR
+
+if [[ ! -d $STEP_DIR ]]; then
+
+  mkdir $STEP_DIR || exit 50
+
+  curl $NODEOS_LIBCURL | tar -xz --strip-components=1 -C $STEP_DIR || err 51
+fi
+
+#
+# Configure and build nodeos-libcurl
+#
+
+echo -e "${NWL}${GRN}Configure nodeos-libcurl${CLR}${NWL}"
+
+STEP_DIR=$NODEOS_LIBCURL_DIR
+
+# We need to build libcurl.a for nodeos so were using the nodeos-libcurl
+# package to have it preconfigured
+
+if [[ -d $STEP_DIR ]]; then 
+  (
+    cd $STEP_DIR || exit 52
+
+    npm run build || err 53
+ 
+    # copy $NODEOS_LIBCURL_DIR/lib/libcurl.a into the vendor/ dir so we can link it
+    # additionally we patch up the libgit2.gyp file
+    cp -ar $NODEOS_LIBCURL_DIR/out/$CPU/lib/libcurl.a $VENDOR_DIR || exit 54
   )
 fi
 

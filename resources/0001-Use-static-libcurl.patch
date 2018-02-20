@@ -1,0 +1,25 @@
+From 70538779fbd6bbda28c4a0cf2541b7ebcf151b17 Mon Sep 17 00:00:00 2001
+From: luii <czarnetzki.philipp@protonmail.ch>
+Date: Tue, 20 Feb 2018 20:20:22 +0100
+Subject: [PATCH] Use static libcurl
+
+---
+ generate/templates/templates/binding.gyp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/generate/templates/templates/binding.gyp b/generate/templates/templates/binding.gyp
+index 09a5a017..c4c5f964 100644
+--- a/generate/templates/templates/binding.gyp
++++ b/generate/templates/templates/binding.gyp
+@@ -94,7 +94,7 @@
+         [
+           "OS=='linux' or OS=='mac'", {
+             "libraries": [
+-              "-lcurl"
++              "-L<(module_root_dir)/vendor/libcurl.a"
+             ]
+           }
+         ],
+-- 
+2.16.1
+
