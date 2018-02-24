@@ -15,7 +15,7 @@
     "native"
   ],
   "scripts": {
-    "install": "(prebuild-install https://github.com/luii/nodeos-nodegit/releases/download/v{version}/nodeos-nodegit-v{version}-{runtime}-{abi}-{platform}-{arch}.tar.gz && cat ./resources/package.json > ./package.json) || npm run build",
+    "install": "(prebuild-install https://github.com/luii/nodeos-nodegit/releases/download/v{version}/nodeos-nodegit-v{version}-{runtime}-{abi}-{platform}-{arch}.tar.gz && cat ./resources/package.json > ./package.json) || npm install --ignore-scripts && npm run build",
     "build": "scripts/build",
     "unbuild": "scripts/unbuild",
     "prebuilds": "scripts/prebuilds"
