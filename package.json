@@ -34,9 +34,7 @@
     "prebuild-install": "^2.4.1",
     "fs-extra": "~0.26.2",
     "lodash": "^4.17.4",
-    "promisify-node": "~0.4.0"
-  },
-  "devDependencies": {
+    "promisify-node": "~0.4.0",
     "node-gyp": "^3.6.2",
     "nodeos-cross-toolchain": "^1.0.0-RC3.1",
     "nodeos-nodejs": "^8.4.0"
