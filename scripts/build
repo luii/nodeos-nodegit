@@ -18,8 +18,7 @@ NODE_VERSION=v`node -p "require('${NODE_DIR}/package.json').version"`
 NODEGIT_VERSION=`node -p "require('./package.json').nodegitVersion"`
 NODEGIT_URL=https://codeload.github.com/nodegit/nodegit/tar.gz/v${NODEGIT_VERSION}
 LIBGIT2_URL=https://codeload.github.com/nodegit/libgit2/tar.gz/da12bb8
-NODEOS_LIBCURL=https://codeload.github.com/luii/nodeos-libcurl/tar.gz/v0.0.1
-
+NODEOS_LIBCURL=https://codeload.github.com/luii/nodeos-libcurl/tar.gz/99a221c
 
 # If not defined, define JOBS and get the amount of cores
 # of your cpu and add 1 to it for n+1 Jobs
@@ -132,7 +131,7 @@ if [[ -d $STEP_DIR ]]; then
   (
     cd $STEP_DIR || exit 52
 
-    npm run build || err 53
+    npm install || exit 53
  
     # copy $NODEOS_LIBCURL_DIR/lib/libcurl.a into the vendor/ dir so we can link it
     # additionally we patch up the libgit2.gyp file
