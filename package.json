@@ -15,7 +15,7 @@
     "native"
   ],
   "scripts": {
-    "install": "(prebuild-install https://github.com/luii/nodeos-nodegit/releases/download/v{version}/nodeos-nodegit-v{version}-{runtime}-{abi}-{platform}-{arch}.tar.gz && cat ./resources/package.json > ./package.json) || npm install --ignore-scripts && npm run build",
+    "install": "(prebuild-install https://github.com/luii/nodeos-nodegit/releases/download/v{version}/nodeos-nodegit-v{version}-{runtime}-{abi}-{platform}-{arch}.tar.gz && cat ./resources/package.json > ./package.json) || gulp",
     "build": "scripts/build",
     "unbuild": "scripts/unbuild",
     "prebuilds": "scripts/prebuilds"
@@ -37,7 +37,16 @@
     "promisify-node": "~0.4.0",
     "node-gyp": "^3.6.2",
     "nodeos-cross-toolchain": "^1.0.0-RC3.1",
-    "nodeos-nodejs": "^8.4.0"
+    "nodeos-nodejs": "^8.4.0",
+    "nodeos-libcurl": "luii/nodeos-libcurl"
+  },
+  "devDependencies": {
+    "del": "^3.0.0",
+    "gulp": "^3.9.1",
+    "gulp-decompress": "^2.0.2",
+    "gulp-downloader": "^1.0.4",
+    "gulp-env": "^0.4.0",
+    "gulplog": "^1.0.0"
   },
   "bugs": {
     "url": "https://github.com/luii/nodeos-nodegit/issues"
